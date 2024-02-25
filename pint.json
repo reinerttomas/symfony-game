@@ -1,0 +1,24 @@
+{
+    "preset": "symfony",
+    "exclude": [
+        "var/"
+    ],
+    "rules": {
+        "blank_line_after_opening_tag": true,
+        "nullable_type_declaration_for_default_null_value": true,
+        "declare_parentheses": true,
+        "declare_strict_types": true,
+        "concat_space": {
+            "spacing": "one"
+        },
+        "class_attributes_separation": {
+            "elements": {
+                "const": "only_if_meta",
+                "property": "only_if_meta",
+                "method": "one",
+                "trait_import": "none",
+                "case": "none"
+            }
+        }
+    }
+}
