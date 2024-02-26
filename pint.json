@@ -1,5 +1,5 @@
 {
-    "preset": "symfony",
+    "preset": "laravel",
     "exclude": [
         "var/"
     ],
@@ -19,6 +19,9 @@
                 "trait_import": "none",
                 "case": "none"
             }
+        },
+        "increment_style": {
+            "style": "post"
         }
     }
 }
