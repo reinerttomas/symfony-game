@@ -4,6 +4,13 @@ declare(strict_types=1);
 
 namespace App;
 
+use App\Armor\IceBlock;
+use App\Armor\Leather;
+use App\Armor\Shield;
+use App\Attack\Bow;
+use App\Attack\FireBolt;
+use App\Attack\MultiAttack;
+use App\Attack\TwoHandedSword;
 use App\Character\Character;
 use App\Character\CharacterType;
 
@@ -48,9 +55,10 @@ class Game
     public function createCharacter(CharacterType $type): Character
     {
         return match ($type) {
-            CharacterType::FIGHTER => new Character(90, 12, 0.25),
-            CharacterType::ARCHER => new Character(80, 10, 0.15),
-            CharacterType::MAGE => new Character(70, 8, 0.10),
+            CharacterType::FIGHTER => new Character(90, 12, new TwoHandedSword(), new Shield()),
+            CharacterType::ARCHER => new Character(80, 10, new Bow(), new Leather()),
+            CharacterType::MAGE => new Character(70, 8, new FireBolt(), new IceBlock()),
+            CharacterType::MAGE_ARCHER => new Character(75, 9, new MultiAttack([new FireBolt(), new Bow()]), new Shield()),
         };
     }
 

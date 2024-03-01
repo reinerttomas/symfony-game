@@ -11,3 +11,6 @@ fcs:
 
 ci:
 	composer ci
+
+play:
+	php bin/console app:game:play

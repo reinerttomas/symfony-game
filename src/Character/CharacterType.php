@@ -9,6 +9,7 @@ enum CharacterType: string
     case FIGHTER = 'fighter';
     case ARCHER = 'archer';
     case MAGE = 'mage';
+    case MAGE_ARCHER = 'mage_archer';
 
     public function name(): string
     {
@@ -16,6 +17,7 @@ enum CharacterType: string
             self::FIGHTER => 'Fighter',
             self::ARCHER => 'Archer',
             self::MAGE => 'Mage',
+            self::MAGE_ARCHER => 'Mage Archer',
         };
     }
 

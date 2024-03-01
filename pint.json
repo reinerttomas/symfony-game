@@ -19,9 +19,6 @@
                 "trait_import": "none",
                 "case": "none"
             }
-        },
-        "increment_style": {
-            "style": "post"
         }
     }
 }

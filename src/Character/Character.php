@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Character;
 
+use App\Armor\CanReduceAttack;
+use App\Attack\CanPerformAttack;
 use App\Dice;
 use Random\RandomException;
 
@@ -17,7 +19,8 @@ class Character
     public function __construct(
         private readonly int $maxHealth,
         private readonly int $baseDamage,
-        private readonly float $armor
+        private readonly CanPerformAttack $attack,
+        private readonly CanReduceAttack $armor,
     ) {
         $this->currentHealth = $this->maxHealth;
     }
@@ -36,13 +39,13 @@ class Character
             return 0;
         }
 
-        return $this->baseDamage + Dice::roll(6);
+        return $this->attack->performAttack($this->baseDamage);
     }
 
     public function receiveAttack(int $damage): int
     {
-        $armorReduction = (int) ($this->armor * $damage);
-        $damageTaken = $damage - $armorReduction;
+        $armorReduction = $this->armor->getArmorReduction($damage);
+        $damageTaken = max($damage - $armorReduction, 0);
         $this->currentHealth -= $damageTaken;
 
         return $damageTaken;
