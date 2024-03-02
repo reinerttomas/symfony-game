@@ -9,8 +9,8 @@ use App\Armor\Leather;
 use App\Armor\Shield;
 use App\Attack\Bow;
 use App\Attack\FireBolt;
-use App\Attack\MultiAttack;
 use App\Attack\TwoHandedSword;
+use App\Builder\CharacterBuilder;
 use App\Character\Character;
 use App\Character\CharacterType;
 
@@ -55,10 +55,30 @@ class Game
     public function createCharacter(CharacterType $type): Character
     {
         return match ($type) {
-            CharacterType::FIGHTER => new Character(90, 12, new TwoHandedSword(), new Shield()),
-            CharacterType::ARCHER => new Character(80, 10, new Bow(), new Leather()),
-            CharacterType::MAGE => new Character(70, 8, new FireBolt(), new IceBlock()),
-            CharacterType::MAGE_ARCHER => new Character(75, 9, new MultiAttack([new FireBolt(), new Bow()]), new Shield()),
+            CharacterType::FIGHTER => CharacterBuilder::new()
+                ->setMaxHealth(90)
+                ->setBaseDamage(12)
+                ->setAttack(new TwoHandedSword())
+                ->setArmor(new Shield())
+                ->build(),
+            CharacterType::ARCHER => CharacterBuilder::new()
+                ->setMaxHealth(80)
+                ->setBaseDamage(10)
+                ->setAttack(new Bow())
+                ->setArmor(new Leather())
+                ->build(),
+            CharacterType::MAGE => CharacterBuilder::new()
+                ->setMaxHealth(70)
+                ->setBaseDamage(8)
+                ->setAttack(new FireBolt())
+                ->setArmor(new IceBlock())
+                ->build(),
+            CharacterType::MAGE_ARCHER => CharacterBuilder::new()
+                ->setMaxHealth(75)
+                ->setBaseDamage(9)
+                ->setAttack(new FireBolt(), new Bow())
+                ->setArmor(new Shield())
+                ->build(),
         };
     }
 
