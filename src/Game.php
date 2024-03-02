@@ -10,10 +10,10 @@ use App\Armor\Shield;
 use App\Attack\Bow;
 use App\Attack\FireBolt;
 use App\Attack\TwoHandedSword;
-use App\Builder\CharacterBuilder;
 use App\Builder\CharacterBuilderFactory;
 use App\Character\Character;
 use App\Character\CharacterType;
+use Random\RandomException;
 
 readonly class Game
 {
@@ -58,6 +58,9 @@ readonly class Game
         }
     }
 
+    /**
+     * @throws RandomException
+     */
     public function createCharacter(CharacterType $type): Character
     {
         return match ($type) {

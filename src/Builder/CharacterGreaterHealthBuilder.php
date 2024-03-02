@@ -8,9 +8,8 @@ use App\Armor\CanReduceAttack;
 use App\Attack\CanPerformAttack;
 use App\Attack\MultiAttack;
 use App\Character\Character;
-use Psr\Log\LoggerInterface;
 
-class CharacterBuilder implements CanBuildCharacter
+class CharacterGreaterHealthBuilder implements CanBuildCharacter
 {
     private int $maxHealth;
     private int $baseDamage;
@@ -19,13 +18,9 @@ class CharacterBuilder implements CanBuildCharacter
     /** @var CanPerformAttack[] */
     private array $attacks;
 
-    public function __construct(private LoggerInterface $logger)
-    {
-    }
-
     public function setMaxHealth(int $maxHealth): self
     {
-        $this->maxHealth = $maxHealth;
+        $this->maxHealth = (int) ($maxHealth * 1.5);
 
         return $this;
     }
@@ -53,11 +48,6 @@ class CharacterBuilder implements CanBuildCharacter
 
     public function build(): Character
     {
-        $this->logger->info('Creating a character.', [
-            'maxHealth' => $this->maxHealth,
-            'baseDamage' => $this->baseDamage,
-        ]);
-
         if (count($this->attacks) === 1) {
             $attack = $this->attacks[0];
         } else {

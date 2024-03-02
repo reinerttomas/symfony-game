@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Builder;
 
+use App\Dice;
 use Psr\Log\LoggerInterface;
+use Random\RandomException;
 
 readonly class CharacterBuilderFactory
 {
@@ -12,8 +14,15 @@ readonly class CharacterBuilderFactory
     {
     }
 
-    public function createBuilder(): CharacterBuilder
+    /**
+     * @throws RandomException
+     */
+    public function createBuilder(): CanBuildCharacter
     {
+        if (Dice::roll(100) > 90) {
+            return new CharacterGreaterHealthBuilder();
+        }
+
         return new CharacterBuilder($this->logger);
     }
 }
