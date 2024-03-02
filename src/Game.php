@@ -11,11 +11,17 @@ use App\Attack\Bow;
 use App\Attack\FireBolt;
 use App\Attack\TwoHandedSword;
 use App\Builder\CharacterBuilder;
+use App\Builder\CharacterBuilderFactory;
 use App\Character\Character;
 use App\Character\CharacterType;
 
-class Game
+readonly class Game
 {
+    public function __construct(
+        private CharacterBuilderFactory $characterBuilderFactory,
+    ) {
+    }
+
     public function play(Character $player, Character $enemy): Fight
     {
         $player->rest();
@@ -55,25 +61,25 @@ class Game
     public function createCharacter(CharacterType $type): Character
     {
         return match ($type) {
-            CharacterType::FIGHTER => CharacterBuilder::new()
+            CharacterType::FIGHTER => $this->characterBuilderFactory->createBuilder()
                 ->setMaxHealth(90)
                 ->setBaseDamage(12)
                 ->setAttack(new TwoHandedSword())
                 ->setArmor(new Shield())
                 ->build(),
-            CharacterType::ARCHER => CharacterBuilder::new()
+            CharacterType::ARCHER => $this->characterBuilderFactory->createBuilder()
                 ->setMaxHealth(80)
                 ->setBaseDamage(10)
                 ->setAttack(new Bow())
                 ->setArmor(new Leather())
                 ->build(),
-            CharacterType::MAGE => CharacterBuilder::new()
+            CharacterType::MAGE => $this->characterBuilderFactory->createBuilder()
                 ->setMaxHealth(70)
                 ->setBaseDamage(8)
                 ->setAttack(new FireBolt())
                 ->setArmor(new IceBlock())
                 ->build(),
-            CharacterType::MAGE_ARCHER => CharacterBuilder::new()
+            CharacterType::MAGE_ARCHER => $this->characterBuilderFactory->createBuilder()
                 ->setMaxHealth(75)
                 ->setBaseDamage(9)
                 ->setAttack(new FireBolt(), new Bow())
