@@ -8,8 +8,6 @@ use App\Character\Character;
 use App\Character\CharacterType;
 use App\Fight;
 use App\Game;
-use App\Observer\XpEarnedObserver;
-use App\Service\XpCalculator;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -27,11 +25,6 @@ class GameCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $xpObserver = new XpEarnedObserver(
-            new XpCalculator()
-        );
-        $this->game->subscribe($xpObserver);
-
         $io = new SymfonyStyle($input, $output);
 
         $io->text('Welcome to the game where warriors fight against each other for honor and glory... and 🍕!');
