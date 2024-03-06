@@ -13,10 +13,14 @@ use App\Attack\TwoHandedSword;
 use App\Builder\CharacterBuilderFactory;
 use App\Character\Character;
 use App\Character\CharacterType;
+use App\Observer\CanObserverFight;
 use Random\RandomException;
 
-readonly class Game
+class Game
 {
+    /** @var CanObserverFight[] */
+    private array $observers = [];
+
     public function __construct(
         private CharacterBuilderFactory $characterBuilderFactory,
     ) {
@@ -40,20 +44,14 @@ readonly class Game
             $fight->addDamageDealt($damageDealt);
 
             if ($this->didPlayerDie($enemy)) {
-                $fight->setWinner($player);
-                $fight->setLoser($enemy);
-
-                return $fight;
+                return $this->finishedFight($fight, $player, $enemy);
             }
 
             $damageReceived = $player->receiveAttack($enemy->attack());
             $fight->addDamageReceived($damageReceived);
 
             if ($this->didPlayerDie($player)) {
-                $fight->setWinner($enemy);
-                $fight->setLoser($player);
-
-                return $fight;
+                return $this->finishedFight($fight, $enemy, $player);
             }
         }
     }
@@ -91,8 +89,41 @@ readonly class Game
         };
     }
 
+    public function subscribe(CanObserverFight $observer): void
+    {
+        if (! in_array($observer, $this->observers, true)) {
+            $this->observers[] = $observer;
+        }
+    }
+
+    public function unsubscribe(CanObserverFight $canObserverFight): void
+    {
+        $key = array_search($canObserverFight, $this->observers, true);
+
+        if ($key !== false) {
+            unset($this->observers[$key]);
+        }
+    }
+
     private function didPlayerDie(Character $player): bool
     {
         return $player->getCurrentHealth() <= 0;
+    }
+
+    public function finishedFight(Fight $fight, Character $winner, Character $loser): Fight
+    {
+        $fight->setWinner($winner);
+        $fight->setLoser($loser);
+
+        $this->notify($fight);
+
+        return $fight;
+    }
+
+    private function notify(Fight $fight): void
+    {
+        foreach ($this->observers as $observer) {
+            $observer->onFightFinished($fight);
+        }
     }
 }
