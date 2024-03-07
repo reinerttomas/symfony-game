@@ -13,8 +13,10 @@ use App\Attack\TwoHandedSword;
 use App\Builder\CharacterBuilderFactory;
 use App\Character\Character;
 use App\Character\CharacterType;
+use App\Event\FightStartingEvent;
 use App\Observer\CanObserverFight;
 use Random\RandomException;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class Game
 {
@@ -23,11 +25,14 @@ class Game
 
     public function __construct(
         private CharacterBuilderFactory $characterBuilderFactory,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
     public function play(Character $player, Character $enemy): Fight
     {
+        $this->eventDispatcher->dispatch(new FightStartingEvent($player, $enemy));
+
         $player->rest();
 
         $fight = new Fight();
