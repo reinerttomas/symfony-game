@@ -23,6 +23,13 @@ services:
   # add more service definitions when explicit configuration is needed
   # please note that last definitions always *replace* previous ones
 
-#  App\Game:
-#    calls:
-#      - subscribe: [ '@App\Observer\XpEarnedObserver' ]
+  App\Game:
+    calls:
+      - subscribe: [ '@App\Observer\XpEarnedObserver' ]
+
+  App\Service\XpCalculatorInterface:
+    alias: App\Service\OutputtingXpCalculator
+
+  App\Service\OutputtingXpCalculator:
+    arguments:
+      - '@App\Service\XpCalculator'
