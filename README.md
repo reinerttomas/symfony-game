@@ -151,3 +151,91 @@ class Game
     }
 }
 ```
+
+## Builder Pattern
+
+Technical definition
+
+> A creational design pattern that lets you build and configure complex objects step-by-step.
+
+In plain words
+
+> the pattern allows you to produce different types and representations of an object using the same construction code.
+
+We have the builder class. Thanks to this solution we can still provide service by constructor
+
+```php
+class CharacterBuilder implements CanBuildCharacter
+{
+    private int $maxHealth;
+    private int $baseDamage;
+    private CanReduceAttack $armor;
+
+    /** @var CanPerformAttack[] */
+    private array $attacks;
+
+    public function __construct(private LoggerInterface $logger)
+    {
+    }
+
+    public function setMaxHealth(int $maxHealth): self
+    {
+        $this->maxHealth = $maxHealth;
+
+        return $this;
+    }
+
+    public function setBaseDamage(int $baseDamage): self
+    {
+        $this->baseDamage = $baseDamage;
+
+        return $this;
+    }
+
+    public function setAttack(CanPerformAttack ...$attacks): self
+    {
+        $this->attacks = $attacks;
+
+        return $this;
+    }
+
+    public function setArmor(CanReduceAttack $armor): self
+    {
+        $this->armor = $armor;
+
+        return $this;
+    }
+
+    public function build(): Character
+    {
+        $this->logger->info('Creating a character.', [
+            'maxHealth' => $this->maxHealth,
+            'baseDamage' => $this->baseDamage,
+        ]);
+
+        if (count($this->attacks) === 1) {
+            $attack = $this->attacks[0];
+        } else {
+            $attack = new MultiAttack($this->attacks);
+        }
+
+        return new Character(
+            $this->maxHealth,
+            $this->baseDamage,
+            $attack,
+            $this->armor,
+        );
+    }
+}
+```
+
+And then it can be used as:
+
+```php
+$builder = (new CharacterBuilder($this->logger))
+    ->setMaxHealth(75)
+    ->setBaseDamage(9)
+    ->setAttack(new FireBolt(), new Bow())
+    ->setArmor(new Shield())
+    ->build(),
+```
