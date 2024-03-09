@@ -11,3 +11,8 @@ parameters:
         containerXmlPath: var/cache/dev/App_KernelDevDebugContainer.xml
     scanDirectories:
         - var/cache/dev/Symfony/Config
+
+    ignoreErrors:
+    	-
+    	    message: "#^Parameter \\#2 \\$listener of method Symfony\\\\Component\\\\EventDispatcher\\\\EventDispatcherInterface\\:\\:addListener\\(\\) expects callable\\(\\)\\: mixed, array\\<callable\\(\\)\\: mixed\\>\\|\\(callable\\(\\)\\: mixed\\) given\\.$#"
+    	    path: src/Decorator/DebugEventDispatcherDecorator.php

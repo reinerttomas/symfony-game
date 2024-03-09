@@ -6,7 +6,9 @@ namespace App\Service;
 
 use App\Character\Character;
 use Symfony\Component\Console\Output\ConsoleOutput;
+use Symfony\Component\DependencyInjection\Attribute\AsDecorator;
 
+#[AsDecorator(XpCalculatorInterface::class)]
 class OutputtingXpCalculator implements XpCalculatorInterface
 {
     public function __construct(

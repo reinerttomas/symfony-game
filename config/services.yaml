@@ -28,8 +28,4 @@ services:
       - subscribe: [ '@App\Observer\XpEarnedObserver' ]
 
   App\Service\XpCalculatorInterface:
-    alias: App\Service\OutputtingXpCalculator
-
-  App\Service\OutputtingXpCalculator:
-    arguments:
-      - '@App\Service\XpCalculator'
+    alias: App\Service\XpCalculator
