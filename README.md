@@ -239,3 +239,33 @@ $builder = (new CharacterBuilder($this->logger))
     ->setArmor(new Shield())
     ->build(),
 ```
+
+## Factory
+
+Technical definition
+
+> factory is an object for creating other objects – formally a factory is a function or method that returns objects of a varying prototype or class from some method call, which is assumed to be "new".
+
+In plain words
+
+> Factory is just a class whose job is to create another class. It, like the builder pattern, is a creational pattern.
+
+If we create interface for builder class we can provide different builders by business logic. Result its same, we can create character object. Thanks to dependency injection we can get any services from container-
+
+```php
+class CharacterBuilderFactory
+{
+    public function __construct(private LoggerInterface $logger)
+    {
+    }
+
+    public function createBuilder(): CanBuildCharacter
+    {
+        if (Dice::roll(100) > 90) {
+            return new CharacterGreaterHealthBuilder();
+        }
+
+        return new CharacterBuilder($this->logger);
+    }
+}
+```
