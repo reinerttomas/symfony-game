@@ -2,6 +2,14 @@
 
 Welcome to the Symfony Game repository! This project is a simple game built with Symfony, where you can see practise examples of design patterns. This example is inspired by [symfonycasts](https://symfonycasts.com/screencast/design-patterns/strategy).
 
+## Features
+
+* ✅ Symfony 7
+* ✅ PHPStan
+* ✅ Laravel Pint (PHP Coding Standards Fixer)
+* ✅ GitHub Actions
+* 🚫 Tests
+
 ## Installation
 
 Install dependencies using Composer
