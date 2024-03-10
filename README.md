@@ -34,7 +34,7 @@ In plain words
 
 Game example
 
-> TODO
+> We want to add special attack abilities for each character. For example, the mage will be able to cast spells.
 
 In our example we have an attack interface and the implementation
 
@@ -168,7 +168,7 @@ In plain words
 
 Game example
 
-> TODO
+> Our goal is to create characters easier and more clear. In the future we also want to make database queries. We can accomplish that by creating a builder class.
 
 We have the builder class. Thanks to this solution we can still provide service by constructor
 
@@ -260,7 +260,7 @@ In plain words
 
 Game example
 
-> TODO
+> In character builder we want to enable logging. We need to pass service to our builder. Thanks to factory we can easily do it. 
 
 If we create interface for builder class we can provide different builders by business logic. Result its same, we can create character object.
 
