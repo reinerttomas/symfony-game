@@ -273,10 +273,6 @@ class CharacterBuilderFactory
 
     public function createBuilder(): CanBuildCharacter
     {
-        if (Dice::roll(100) > 90) {
-            return new CharacterGreaterHealthBuilder();
-        }
-
         return new CharacterBuilder($this->logger);
     }
 }
@@ -330,18 +326,13 @@ class Game
         $fight = new Fight();
 
         while (true) {
-            $fight->addRound();
-            $damage = $player->attack();
-
-            $damageDealt = $enemy->receiveAttack($damage);
-            $fight->addDamageDealt($damageDealt);
+            // player attacks
 
             if ($this->didPlayerDie($enemy)) {
                 return $this->finishedFight($fight, $player, $enemy);
             }
 
-            $damageReceived = $player->receiveAttack($enemy->attack());
-            $fight->addDamageReceived($damageReceived);
+            // enemy attacks
 
             if ($this->didPlayerDie($player)) {
                 return $this->finishedFight($fight, $enemy, $player);
@@ -392,4 +383,191 @@ parameters:
     App\Game:
         calls:
             - subscribe: [ '@App\Observer\XpEarnedObserver' ]
+```
+
+## Publish-Subscriber
+
+Technical definition
+
+> It's more of a variation of the observer pattern.
+
+In plain words
+
+> With pub/sub, the observers (also called "listeners") tell the dispatcher which events they want to listen to. Then, the subject (whatever is doing the work) tells the dispatcher to dispatch the event. The dispatcher is then responsible for calling the listener methods.
+
+Game example
+
+> We want to run code before a fight starts.
+
+```php
+readonly class FightStartingEvent
+{
+    public function __construct(
+        public Character $player,
+        public Character $ai,
+    ) {
+    }
+}
+
+class OutputFightStartingSubscriber implements EventSubscriberInterface
+{
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            FightStartingEvent::class => 'onFightStart',
+        ];
+    }
+
+    public function onFightStart(FightStartingEvent $event): void
+    {
+        $io = new SymfonyStyle(new ArrayInput([]), new ConsoleOutput());
+        $io->note('Fight is starting against: ' . $event->ai->getNickname());
+    }
+}
+
+class Game
+{
+    public function __construct(
+        private EventDispatcherInterface $eventDispatcher,
+    ) {
+    }
+
+    public function play(Character $player, Character $enemy): Fight
+    {
+        $this->eventDispatcher->dispatch(new FightStartingEvent($player, $enemy));
+
+        // fight
+    }
+}
+```
+
+## Decorator Pattern
+
+Technical definition
+
+> The decorator pattern allows you to attach new behaviors to objects by placing these objects inside special wrapper objects that contain the behaviors.
+
+In plain words
+
+> The decorator pattern is like an intentional man-in-the-middle attack. You replace a class with your custom implementation, run some code, then call the true method.
+
+Game example
+
+> We want print some text into screen whenever a player levels up.
+
+For the decorator pattern, there's one rule: the class that we want to decorate needs to implement an interface. If class were a vendor package and doesn't implement interface we can't use decorator.
+
+```php
+interface XpCalculatorInterface
+{
+    public function addXp(Character $winner, int $enemyLevel): void;
+}
+
+class XpCalculator implements XpCalculatorInterface
+{
+    public function addXp(Character $winner, int $enemyLevel): void
+    {
+        // logic
+    }
+}
+```
+
+We autowire XpCalculatorInterface to be alias for XpCalculator. 
+
+```yaml
+parameters:
+
+    App\Service\XpCalculatorInterface:
+        alias: App\Service\XpCalculator
+```
+
+Next step is create our decorator class. In Symfony we can use attribute and mark class as decorator for XpCalculatorInterface.
+
+```php
+#[AsDecorator(XpCalculatorInterface::class)]
+class OutputtingXpCalculator implements XpCalculatorInterface
+{
+    public function __construct(
+        private readonly XpCalculatorInterface $innerCalculator,
+    ) {
+    }
+
+    public function addXp(Character $winner, int $enemyLevel): void
+    {
+        $beforeLevel = $winner->getLevel();
+
+        $this->innerCalculator->addXp($winner, $enemyLevel);
+
+        $afterLevel = $winner->getLevel();
+
+        if ($beforeLevel !== $afterLevel) {
+            $output = new ConsoleOutput();
+
+            $output->writeln('--------------------------------');
+            $output->writeln('<bg=green;fg=white>Congratulations! You\'ve leveled up!</>');
+            $output->writeln(sprintf('You are now level "%d"', $winner->getLevel()));
+            $output->writeln('--------------------------------');
+        }
+    }
+}
+```
+
+## Decorator Pattern - core services
+
+If we want to debug EventDispatcher we can use decorator. In our decorator we implements EventDispatcherInterface. We add our logic to dispatch method and rest methods is same. It's super easy. 
+
+```php
+#[AsDecorator('event_dispatcher')]
+class DebugEventDispatcherDecorator implements EventDispatcherInterface
+{
+    public function __construct(private readonly EventDispatcherInterface $eventDispatcher)
+    {
+    }
+
+    public function dispatch(object $event, ?string $eventName = null): object
+    {
+        dump('--------------------');
+        dump('Dispatching event: ' . $event::class);
+        dump('--------------------');
+
+        return $this->eventDispatcher->dispatch($event, $eventName);
+    }
+
+    /**
+     * @param  callable|callable[]  $listener
+     */
+    public function addListener(string $eventName, callable|array $listener, int $priority = 0): void
+    {
+        $this->eventDispatcher->addListener($eventName, $listener, $priority);
+    }
+
+    public function addSubscriber(EventSubscriberInterface $subscriber): void
+    {
+        $this->eventDispatcher->addSubscriber($subscriber);
+    }
+
+    public function removeListener(string $eventName, callable $listener): void
+    {
+        $this->eventDispatcher->removeListener($eventName, $listener);
+    }
+
+    public function removeSubscriber(EventSubscriberInterface $subscriber): void
+    {
+        $this->eventDispatcher->removeSubscriber($subscriber);
+    }
+
+    public function getListeners(?string $eventName = null): array
+    {
+        return $this->eventDispatcher->getListeners($eventName);
+    }
+
+    public function getListenerPriority(string $eventName, callable $listener): ?int
+    {
+        return $this->eventDispatcher->getListenerPriority($eventName, $listener);
+    }
+
+    public function hasListeners(?string $eventName = null): bool
+    {
+        return $this->eventDispatcher->hasListeners($eventName);
+    }
 ```
