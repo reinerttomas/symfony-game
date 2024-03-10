@@ -32,6 +32,10 @@ In plain words
 
 > The strategy pattern is a way to allow part of a class to be rewritten from the outside.
 
+Game example
+
+> TODO
+
 In our example we have an attack interface and the implementation
 
 ```php
@@ -162,6 +166,10 @@ In plain words
 
 > the pattern allows you to produce different types and representations of an object using the same construction code.
 
+Game example
+
+> TODO
+
 We have the builder class. Thanks to this solution we can still provide service by constructor
 
 ```php
@@ -250,7 +258,11 @@ In plain words
 
 > Factory is just a class whose job is to create another class. It, like the builder pattern, is a creational pattern.
 
-If we create interface for builder class we can provide different builders by business logic. Result its same, we can create character object. Thanks to dependency injection we can get any services from container-
+Game example
+
+> TODO
+
+If we create interface for builder class we can provide different builders by business logic. Result its same, we can create character object.
 
 ```php
 class CharacterBuilderFactory
@@ -268,4 +280,116 @@ class CharacterBuilderFactory
         return new CharacterBuilder($this->logger);
     }
 }
+```
+
+## Observer Pattern
+
+Technical definition
+
+> The observer pattern defines a one-to-many dependency between objects so that when one object changes state, all of its dependents are notified and updated automatically.
+
+In plain words
+
+> The observer pattern allows a bunch of objects to be notified by a central object when something happens.
+
+Game example
+
+> Each time you win a fight, your character will earn some XP. After you've earned enough points, the character will "level up", meaning it's base stats, like health and damage, will increase.
+
+First we create class to earned xp each time we win the fight. This class need to be notified when fight finished.
+
+```php
+interface CanObserverFight
+{
+    public function onFightFinished(Fight $fight): void;
+}
+
+class XpEarnedObserver implements CanObserverFight
+{
+    public function __construct(private XpCalculatorInterface $xpCalculator)
+    {
+    }
+
+    public function onFightFinished(Fight $fight): void
+    {
+        $this->xpCalculator->addXp($fight->getWinner(), $fight->getLoser()->getLevel());
+    }
+}
+```
+
+Next we need a way for every observer to subscribe to be notified when fight finished.
+
+```php
+class Game
+{
+    /** @var CanObserverFight[] */
+    private array $observers = [];
+
+    public function play(Character $player, Character $enemy): Fight
+    {
+        $fight = new Fight();
+
+        while (true) {
+            $fight->addRound();
+            $damage = $player->attack();
+
+            $damageDealt = $enemy->receiveAttack($damage);
+            $fight->addDamageDealt($damageDealt);
+
+            if ($this->didPlayerDie($enemy)) {
+                return $this->finishedFight($fight, $player, $enemy);
+            }
+
+            $damageReceived = $player->receiveAttack($enemy->attack());
+            $fight->addDamageReceived($damageReceived);
+
+            if ($this->didPlayerDie($player)) {
+                return $this->finishedFight($fight, $enemy, $player);
+            }
+        }
+    }
+
+    public function subscribe(CanObserverFight $observer): void
+    {
+        if (! in_array($observer, $this->observers, true)) {
+            $this->observers[] = $observer;
+        }
+    }
+
+    public function unsubscribe(CanObserverFight $canObserverFight): void
+    {
+        $key = array_search($canObserverFight, $this->observers, true);
+
+        if ($key !== false) {
+            unset($this->observers[$key]);
+        }
+    }
+
+    public function finishedFight(Fight $fight, Character $winner, Character $loser): Fight
+    {
+        $fight->setWinner($winner);
+        $fight->setLoser($loser);
+
+        $this->notify($fight);
+
+        return $fight;
+    }
+
+    private function notify(Fight $fight): void
+    {
+        foreach ($this->observers as $observer) {
+            $observer->onFightFinished($fight);
+        }
+    }
+}
+```
+
+In Symfony we can autowire services in services.yaml. Simply after initialize Game, call the subscribe() method on it and pass, as an argument, the @App\Observer\XpEarnedObserver service.
+
+```yaml
+parameters:
+
+    App\Game:
+        calls:
+            - subscribe: [ '@App\Observer\XpEarnedObserver' ]
 ```
